@@ -111,6 +111,7 @@
     function textEffect(element, time) {
         const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz@!#$%^&*()_+-";
         let interval = null;
+        console.log(time);
 
         const originalText = element.textContent;
         let iteration = 0;
@@ -119,7 +120,7 @@
 
         interval = setInterval(() => {
             element.textContent = originalText
-                .split(" ")
+                .split("")
                 .map((char, index) => {
                     if (char === " ") return " ";
                     if (index < iteration) {
@@ -134,25 +135,25 @@
             }
 
             iteration += 1 / 3;
+            // this.time = time;
         }, time);
     }
 
     // Fetch and apply quote
-    async function fetchQuote(quoteEffectTime, AuthorEffectTime) {
+    async function fetchQuote(quoteEffectTime,AuthorEffectTime) {
         try {
-            const response = await fetch("https://api.allorigins.win/get?url=" + encodeURIComponent("https://api.quotable.io/random"));
-            const data = await response.json();
-            const quoteData = JSON.parse(data.contents);
+            const response = await fetch("http://api.quotable.io/random");
+            const response_data = await response.json();
 
-            if (quoteData.content.length <= 127) {
-                quote.textContent = quoteData.content;
-            } else {
+            if(response_data.content.length <=127){
+                quote.textContent = response_data.content;
+            }else{
                 location.reload();
             }
             textEffect(quote, quoteEffectTime); // Apply text effect
-            author.textContent = quoteData.author;
+            author.textContent = response_data.author;
             textEffect(author, AuthorEffectTime); // Apply text effect
-            await explainText(quoteData.content); // Fetch explanation
+            await explainText(response_data.content); // Fetch explanation
         } catch (error) {
             console.log(error);
         }
@@ -185,47 +186,13 @@
 
     // Event listener for the next quote button
     nextBtn.addEventListener("click", () => {
-        fetchQuote(20, 50); // Fetch and display a new quote
+        fetchQuote(20,50); // Fetch and display a new quote
     });
 
     // Initially fetch the first quote
-    fetchQuote(20, 50);
+    fetchQuote();
 
-    // GPT Integration for explanation
-    async function explainText(text) {
-        try {
-            const apiKey = "your-api-key-here"; // Use your API key securely
 
-            const response = await fetch("https://api.openai.com/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${apiKey}`,
-                },
-                body: JSON.stringify({
-                    model: "gpt-3.5-turbo",
-                    messages: [
-                        {
-                            role: "user",
-                            content: `Explain this quote in simple words: "${text}"`,
-                        },
-                    ],
-                    temperature: 0.7,
-                }),
-            });
-
-            const result = await response.json();
-            if (result && result.choices && result.choices.length > 0) {
-                const explanation = result.choices[0].message.content;
-                explain.textContent = explanation;
-            } else {
-                explain.textContent = "No explanation available.";
-            }
-        } catch (error) {
-            explain.textContent = "Something went wrong while fetching explanation.";
-            console.error(error);
-        }
-    }
 </script>
 
 </html>
